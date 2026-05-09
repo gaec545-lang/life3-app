@@ -18,11 +18,18 @@ const AITutor = {
           max_tokens: 150
         })
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Groq API Error (${response.status}):`, errorText);
+        return `Error del Tutor (${response.status}): ${response.statusText}. Verifica tu conexión o API Key.`;
+      }
+
       const data = await response.json();
       return data.choices[0].message.content;
     } catch (e) {
-      console.error("Groq API Error:", e);
-      return "Hubo un error al contactar al tutor AI. Por favor, intenta de nuevo.";
+      console.error("Groq API Fetch Error:", e);
+      return "Error de conexión: No se pudo contactar al servidor de Groq. Esto suele ser un bloqueo de seguridad del navegador (CORS).";
     }
   },
 

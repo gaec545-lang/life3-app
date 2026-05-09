@@ -229,7 +229,21 @@ const SprintModule = {
   },
   
   selectMatch(side, el) {
-     if (el.classList.contains('matched')) return;
+     if (el.classList.contains('matched')) {
+       const text = el.innerText;
+       const matchIndex = this.matchState.matches.findIndex(m => m.leftText === text || m.rightText === text);
+       if (matchIndex !== -1) {
+         const pair = this.matchState.matches[matchIndex];
+         document.querySelectorAll('.option-btn').forEach(btn => {
+           if (btn.innerText === pair.leftText || btn.innerText === pair.rightText) {
+             btn.classList.remove('matched');
+             btn.disabled = false;
+           }
+         });
+         this.matchState.matches.splice(matchIndex, 1);
+       }
+       return;
+     }
 
      if (side === 'left') {
        document.querySelectorAll('.match-btn-l').forEach(b => b.classList.remove('selected'));
@@ -252,11 +266,14 @@ const SprintModule = {
     if (this.matchState.matches.length !== ex.pairs.length) return;
     
     let isCorrect = true;
+    const userPairsStr = this.matchState.matches.map(m => `${m.leftText} : ${m.rightText}`).join(' | ');
+    const correctPairsStr = ex.pairs.map(p => `${p.left} : ${p.right}`).join(' | ');
+
     for (let m of this.matchState.matches) {
        const pair = ex.pairs.find(p => App.normalize(p.left) === App.normalize(m.leftText));
        if (!pair || App.normalize(pair.right) !== App.normalize(m.rightText)) { isCorrect = false; break; }
     }
-    this.processAnswer(isCorrect, "matching", "matching");
+    this.processAnswer(isCorrect, `Pares elegidos: ${userPairsStr}`, `Pares correctos: ${correctPairsStr}`);
   },
 
   checkAnswerIndex(idx) {

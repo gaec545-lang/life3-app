@@ -13,10 +13,19 @@ const App = {
   },
   
   initLocalStorage() {
-    const data = localStorage.getItem('life3_progress_v2'); // new key for fresh start if needed, or use old
+    const data = localStorage.getItem('life3_progress_v2'); 
     if (data) {
       this.data = JSON.parse(data);
       this.checkStreak();
+      
+      // Force unlock all blocks for existing users as requested
+      for (let i = 1; i <= 10; i++) {
+        if (!this.data.blocks[i] || this.data.blocks[i].status === 'locked') {
+          this.data.blocks[i] = this.data.blocks[i] || { stars: 0, bestScore: 0 };
+          this.data.blocks[i].status = 'available';
+        }
+      }
+      this.saveData();
     } else {
       this.data = {
         streakDays: 0,
@@ -31,14 +40,6 @@ const App = {
           stars: 0,
           bestScore: 0
         };
-      }
-      this.saveData();
-    } else {
-      // Force unlock all blocks for existing users as requested
-      for (let i = 1; i <= 10; i++) {
-        if (this.data.blocks[i].status === 'locked') {
-          this.data.blocks[i].status = 'available';
-        }
       }
       this.saveData();
     }

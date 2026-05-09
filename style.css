@@ -1,15 +1,15 @@
 :root {
   --bg-primary: #0a0a0f;
-  --bg-card: rgba(26, 26, 36, 0.6);
-  --bg-elevated: rgba(34, 34, 58, 0.8);
+  --bg-card: rgba(30, 30, 45, 0.85);
+  --bg-elevated: rgba(45, 45, 70, 0.95);
   --accent-yellow: #f5c842;
   --accent-orange: #f58c00;
   --accent-green: #2dd4bf; /* Mint green */
   --accent-red: #fb7185; /* Rose */
   --accent-blue: #38bdf8; /* Sky blue */
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
   --border: rgba(255, 255, 255, 0.1);
   --radius-sm: 12px;
   --radius-md: 20px;

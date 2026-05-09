@@ -185,7 +185,8 @@ const App = {
     return str.toString()
       .trim()
       .toLowerCase()
-      .replace(/[.,!?¡¿]/g, '') // Remove punctuation
+      .replace(/[.,!?¡¿]/g, '') // Remove basic punctuation
+      .replace(/['’‘"`“”]/g, "'") // Normalize all quote types to single straight quote
       .replace(/\s+/g, ' ');    // Normalize multiple spaces to one
   },
 

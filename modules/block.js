@@ -11,6 +11,10 @@ const BlockModule = {
   correctAnswers: 0,
 
   render(blockId, tab) {
+    if (this.currentBlock && this.currentBlock.id !== blockId) {
+       this.practiceExercises = [];
+       this.currentExerciseIndex = 0;
+    }
     this.currentBlock = BLOCKS[blockId];
     if (!this.currentBlock) {
       window.location.hash = '#dashboard';
@@ -82,7 +86,10 @@ const BlockModule = {
       </div>
 
       <div class="explain-card yellow glass">
-        <h3 style="margin-bottom: 20px;">¿Cuándo se usa?</h3>
+        <div class="flex-between" style="margin-bottom: 20px;">
+          <h3>¿Cuándo se usa?</h3>
+          <button class="ai-badge" onclick="BlockModule.showAINarrative()" style="cursor:pointer; border:none;">✨ Explicación AI</button>
+        </div>
         ${exp.whenToUse.map(u => `
           <div style="display:flex; gap:15px; margin-bottom:20px; align-items:center;">
             <div style="font-size:1.8rem; background:rgba(0,0,0,0.2); width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center;">${u.icon}</div>
@@ -195,6 +202,31 @@ const BlockModule = {
     this.hearts = 3;
     this.sessionXP = 0;
     this.correctAnswers = 0;
+  },
+
+  async showAINarrative() {
+     App.openBottomSheet(`
+       <div style="text-align:center;">
+         <div class="ai-loader" style="margin-bottom:15px; border-top-color:var(--accent-blue);"></div>
+         <h3 style="color:var(--accent-blue);">El Tutor está preparando una historia...</h3>
+       </div>
+     `, false);
+
+     const narrative = await AITutor.explainLessonNarrative(
+       this.currentBlock.title, 
+       this.currentBlock.explain.description, 
+       this.currentBlock.explain.rules
+     );
+
+     App.openBottomSheet(`
+       <div style="padding:10px;">
+         <div class="ai-badge" style="margin-bottom:15px;">AI Narrative</div>
+         <div class="ai-explanation" style="background:rgba(255,255,255,0.05); color:var(--text-primary); border-color:var(--accent-blue);">
+           ${narrative.replace(/\n/g, '<br>')}
+         </div>
+         <button class="action-btn primary" onclick="App.closeBottomSheet()">Cerrar</button>
+       </div>
+     `, true);
   },
 
   renderPractice() {

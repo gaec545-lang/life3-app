@@ -34,8 +34,23 @@ const AITutor = {
   },
 
   async explainError(topic, question, userAnswer, correctAnswer) {
-    const sysMsg = "Eres un profesor de inglés de alto nivel. Sé conciso, alentador y profesional. Explica en 1 o 2 oraciones (en español) por qué la respuesta del usuario es incorrecta y por qué la correcta lo es, basándote en la regla gramatical.";
-    const userMsg = `Tema: ${topic}\nPregunta: ${question}\nRespuesta del usuario: ${userAnswer}\nRespuesta correcta: ${correctAnswer}\nExplica el error brevemente.`;
+    const sysMsg = `Eres un tutor de inglés personal de élite. 
+    Tu objetivo es detectar por qué el usuario falló. 
+    REGLA CRÍTICA: Si la respuesta del usuario es casi idéntica a la correcta (ej. solo cambia una mayúscula o un espacio), felicítalo primero pero menciona la sutil diferencia. 
+    Si el error es gramatical, explica la regla de forma narrativa y amena. 
+    Máximo 3 oraciones. Habla directamente al usuario.`;
+    
+    const userMsg = `Tema: ${topic}\nPregunta: ${question}\nRespuesta del usuario: ${userAnswer}\nRespuesta correcta: ${correctAnswer}\nExplica el error brevemente de forma humana.`;
+    
+    return await this.callGroq([
+      { role: "system", content: sysMsg },
+      { role: "user", content: userMsg }
+    ]);
+  },
+
+  async explainLessonNarrative(topic, description, rules) {
+    const sysMsg = "Eres un profesor de inglés entusiasta y experto en narrativa. Explica el tema gramatical de forma amena, como si estuvieras contando una historia o dando un consejo de vida. Usa un tono 'Premium' y profesional pero muy cercano. Estructura el texto en 2 o 3 párrafos cortos.";
+    const userMsg = `Tema: ${topic}\nDescripción: ${description}\nReglas: ${JSON.stringify(rules)}\nGenera una explicación narrativa y profunda.`;
     
     return await this.callGroq([
       { role: "system", content: sysMsg },

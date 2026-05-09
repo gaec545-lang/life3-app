@@ -460,9 +460,26 @@ button {
   font-weight: 500;
 }
 
-.option-btn:hover {
+.option-btn:hover:not(:disabled) {
   background: rgba(255,255,255,0.05);
   border-color: rgba(255,255,255,0.2);
+}
+
+.option-btn.selected {
+  border-color: var(--accent-blue);
+  background: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.option-btn.matched {
+  border-color: var(--accent-green);
+  background: rgba(45, 212, 191, 0.1);
+  opacity: 0.6;
+  cursor: default;
+}
+
+.option-btn:disabled {
+  cursor: default;
 }
 
 .text-input {

@@ -330,14 +330,17 @@ const BlockModule = {
   },
 
   selectMatch(side, el) {
+     if (el.classList.contains('matched')) return;
+
      if (side === 'left') {
-       document.querySelectorAll('.match-btn-l').forEach(b => b.style.borderColor = 'var(--border)');
-       el.style.borderColor = 'var(--accent-blue)';
+       document.querySelectorAll('.match-btn-l').forEach(b => b.classList.remove('selected'));
+       el.classList.add('selected');
        this.matchState.left = el;
      } else if (side === 'right' && this.matchState.left) {
        const l = this.matchState.left;
-       l.style.borderColor = 'var(--accent-green)';
-       el.style.borderColor = 'var(--accent-green)';
+       l.classList.remove('selected');
+       l.classList.add('matched');
+       el.classList.add('matched');
        l.disabled = true;
        el.disabled = true;
        this.matchState.matches.push({ leftText: l.innerText, rightText: el.innerText });

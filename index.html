@@ -8,13 +8,17 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   
+  <!-- Background Effects -->
+  <div class="bg-gradient bg-blob-1"></div>
+  <div class="bg-gradient bg-blob-2"></div>
+
   <div id="app">
     <!-- View containers for SPA routing -->
     <div id="dashboard" class="view"></div>
@@ -23,8 +27,23 @@
     <div id="results" class="view"></div>
   </div>
 
+  <!-- Bottom Sheet for Feedback & AI Tutor -->
+  <div class="bottom-sheet-overlay" id="bs-overlay" onclick="App.closeBottomSheet()"></div>
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="bs-drag-handle"></div>
+    <div class="bs-content" id="bs-content"></div>
+  </div>
+
+  <!-- Side Drawer for Rules Reference -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="App.closeDrawer()"></div>
+  <div class="drawer" id="side-drawer">
+    <button class="drawer-close" onclick="App.closeDrawer()">×</button>
+    <div class="drawer-content" id="drawer-content"></div>
+  </div>
+
   <!-- Scripts -->
   <script src="data/content.js"></script>
+  <script src="modules/ai_tutor.js"></script>
   <script src="modules/dashboard.js"></script>
   <script src="modules/block.js"></script>
   <script src="modules/sprint.js"></script>

@@ -8,6 +8,7 @@ const SprintModule = {
   timerInterval: null,
   isSetup: true,
   xpEarned: 0,
+  isPaused: false,
 
   render() {
     if (this.isSetup) {
@@ -22,10 +23,10 @@ const SprintModule = {
     
     if (unlockedBlocks.length < 2) {
       document.getElementById('sprint').innerHTML = `
-        <div style="text-align:center; margin-top:50px;">
+        <div class="example-card" style="margin-top:50px;">
           <h2>No tienes suficientes bloques desbloqueados</h2>
-          <p>Necesitas al menos 2 bloques para jugar Sprint.</p>
-          <button class="action-btn" onclick="window.location.hash='#dashboard'">Volver</button>
+          <p style="color:var(--text-secondary); margin: 15px 0 30px 0;">Necesitas al menos 2 bloques para jugar Sprint.</p>
+          <button class="action-btn primary" onclick="window.location.hash='#dashboard'">Volver</button>
         </div>
       `;
       return;
@@ -33,23 +34,23 @@ const SprintModule = {
 
     let html = `
       <div style="text-align:center;">
-        <h1 style="color:var(--accent-orange); font-size:2.5rem;">⚡ Sprint 10 Minutos</h1>
-        <p style="color:var(--text-secondary); font-size:1.1rem; margin-top:10px;">Practica todo lo aprendido contrarreloj.</p>
+        <h1 style="color:var(--accent-orange); font-size:3rem; margin-top:20px;">⚡ Sprint 10 Minutos</h1>
+        <p style="color:var(--text-secondary); font-size:1.15rem; margin-top:10px;">Practica todo lo aprendido contrarreloj.</p>
         
-        <div style="background:var(--bg-card); padding:20px; border-radius:var(--radius-md); text-align:left; margin-top:30px;">
-          <h3>Selecciona los bloques a incluir (mín. 2)</h3>
-          <div class="checkbox-grid">
+        <div class="glass" style="padding:30px; border-radius:var(--radius-lg); text-align:left; margin-top:40px;">
+          <h3 style="margin-bottom: 20px;">Selecciona los bloques a incluir (mín. 2)</h3>
+          <div class="checkbox-grid" style="display:grid; gap:15px;">
             ${unlockedBlocks.map(([id, b]) => `
-              <label class="checkbox-item">
-                <input type="checkbox" value="${id}" class="sprint-block-cb" checked>
-                <span>B${id}: ${BLOCKS[id].title}</span>
+              <label class="checkbox-item" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:var(--radius-md); display:flex; align-items:center; gap:15px; cursor:pointer; border:1px solid var(--border);">
+                <input type="checkbox" value="${id}" class="sprint-block-cb" checked style="width:24px; height:24px; accent-color:var(--accent-orange);">
+                <span style="font-size:1.1rem; font-weight:500;">B${id}: ${BLOCKS[id].title}</span>
               </label>
             `).join('')}
           </div>
         </div>
         
-        <button class="action-btn" style="background:var(--accent-orange);" onclick="SprintModule.startSprint()">¡Empezar Sprint!</button>
-        <button class="action-btn" style="background:var(--bg-elevated);" onclick="window.location.hash='#dashboard'">Cancelar</button>
+        <button class="action-btn sprint" onclick="SprintModule.startSprint()">¡Empezar Sprint!</button>
+        <button class="action-btn" style="margin-top:15px; background:transparent;" onclick="window.location.hash='#dashboard'">Cancelar</button>
       </div>
     `;
     
@@ -65,23 +66,22 @@ const SprintModule = {
     
     this.selectedBlocks = Array.from(checkboxes).map(cb => cb.value);
     
-    // Build exercise queue
     this.exercises = [];
     this.selectedBlocks.forEach(id => {
-      // Get all exercises for block, maybe mix them
-      const blockExs = [...BLOCKS[id].exercises].sort(() => Math.random() - 0.5).slice(0, 5); // take max 5 per block to avoid too long
+      const blockExs = [...BLOCKS[id].exercises].sort(() => Math.random() - 0.5).slice(0, 5); 
       blockExs.forEach(ex => {
         this.exercises.push({ ...ex, blockId: id });
       });
     });
     
-    this.exercises.sort(() => Math.random() - 0.5); // shuffle all
+    this.exercises.sort(() => Math.random() - 0.5); 
     
     this.currentIndex = 0;
     this.correctCount = 0;
     this.xpEarned = 0;
     this.timeLeft = 600;
     this.isSetup = false;
+    this.isPaused = false;
     
     this.startTimer();
     this.render();
@@ -90,6 +90,8 @@ const SprintModule = {
   startTimer() {
     clearInterval(this.timerInterval);
     this.timerInterval = setInterval(() => {
+      if (this.isPaused) return;
+
       this.timeLeft--;
       if (this.timeLeft <= 0) {
         this.timeLeft = 0;
@@ -99,7 +101,8 @@ const SprintModule = {
         const timerEl = document.getElementById('sprint-timer');
         if (timerEl) {
           timerEl.innerText = this.formatTime(this.timeLeft);
-          if (this.timeLeft < 120) timerEl.classList.add('danger');
+          if (this.timeLeft < 120) timerEl.style.color = 'var(--accent-red)';
+          else timerEl.style.color = '';
         }
       }
     }, 1000);
@@ -120,19 +123,21 @@ const SprintModule = {
     const ex = this.exercises[this.currentIndex];
     
     let html = `
-      <div class="timer-display ${this.timeLeft < 120 ? 'danger' : ''}" id="sprint-timer">${this.formatTime(this.timeLeft)}</div>
+      <div style="font-family:'JetBrains Mono', monospace; font-size:3.5rem; font-weight:800; text-align:center; margin-bottom:20px; text-shadow: 0 0 20px rgba(255,255,255,0.2);" id="sprint-timer">${this.formatTime(this.timeLeft)}</div>
       
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-        <span style="color:var(--accent-orange); font-weight:bold;">⚡ XP: ${this.xpEarned}</span>
+      <div style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:1.1rem; font-weight:600;">
+        <span style="color:var(--accent-orange);">⚡ XP: ${this.xpEarned}</span>
         <span style="color:var(--text-secondary);">Ej: ${this.currentIndex + 1} / ${this.exercises.length}</span>
       </div>
 
-      <div class="exercise-container" id="sprint-container">
-        <div style="font-size:0.8rem; color:var(--accent-blue); margin-bottom:10px;">B${ex.blockId}: ${BLOCKS[ex.blockId].title}</div>
+      <div class="exercise-container glass" id="sprint-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+           <span style="background:rgba(56,189,248,0.1); color:var(--accent-blue); padding:6px 12px; border-radius:12px; font-size:0.85rem; font-weight:600;">B${ex.blockId}: ${BLOCKS[ex.blockId].title}</span>
+           <button onclick="SprintModule.showRulesDrawer(${ex.blockId})" style="background:none; color:var(--accent-blue); font-size:0.9rem; display:flex; align-items:center; gap:5px;"><span class="ai-badge">AI</span> Ayuda</button>
+        </div>
         <div class="question-text">${ex.question}</div>
     `;
 
-    // Same logic as block.js for inputs
     if (ex.type === 'multiple-choice' || ex.type === 'error-detection') {
       html += `<div class="options-grid">`;
       ex.options.forEach((opt) => {
@@ -141,41 +146,65 @@ const SprintModule = {
       html += `</div>`;
     } else if (ex.type === 'fill-blank' || ex.type === 'translation') {
       html += `
-        <input type="text" class="text-input" id="sprint-text" placeholder="Respuesta..." autocomplete="off">
-        <button class="verify-btn" onclick="SprintModule.checkTextAnswer()">Verificar</button>
+        <div style="margin-top:auto;">
+          <input type="text" class="text-input" id="sprint-text" placeholder="Respuesta..." autocomplete="off">
+          <button class="action-btn sprint" onclick="SprintModule.checkTextAnswer()">Verificar</button>
+        </div>
       `;
     } else if (ex.type === 'word-order') {
        const words = [...ex.words].sort(() => Math.random() - 0.5);
        html += `
-         <div class="word-drop" id="word-drop"></div>
-         <div class="word-bank" id="word-bank">
-           ${words.map(w => `<div class="word-chip" data-word="${w}">${w}</div>`).join('')}
+         <div style="margin-top:auto;">
+           <div class="word-drop" id="word-drop"></div>
+           <div class="word-bank" id="word-bank">
+             ${words.map(w => `<div class="word-chip" data-word="${w}">${w}</div>`).join('')}
+           </div>
+           <button class="action-btn sprint" onclick="SprintModule.checkOrderAnswer()">Verificar</button>
          </div>
-         <button class="verify-btn" onclick="SprintModule.checkOrderAnswer()">Verificar</button>
        `;
     } else if (ex.type === 'matching') {
        html += `
-         <div style="display:flex; justify-content:space-between; gap:20px;">
-           <div style="flex:1; display:flex; flex-direction:column; gap:10px;" id="match-left">
-             ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-l" data-id="${i}" onclick="SprintModule.selectMatch('left', this)">${p.left}</button>`).join('')}
+         <div style="margin-top:auto;">
+           <div style="display:flex; justify-content:space-between; gap:20px;">
+             <div style="flex:1; display:flex; flex-direction:column; gap:10px;" id="match-left">
+               ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-l" data-id="${i}" onclick="SprintModule.selectMatch('left', this)">${p.left}</button>`).join('')}
+             </div>
+             <div style="flex:1; display:flex; flex-direction:column; gap:10px;" id="match-right">
+               ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-r" data-val="${p.right.replace(/'/g, "\\'")}" onclick="SprintModule.selectMatch('right', this)">${p.right}</button>`).join('')}
+             </div>
            </div>
-           <div style="flex:1; display:flex; flex-direction:column; gap:10px;" id="match-right">
-             ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-r" data-val="${p.right.replace(/'/g, "\\'")}" onclick="SprintModule.selectMatch('right', this)">${p.right}</button>`).join('')}
-           </div>
+           <button class="action-btn sprint" style="margin-top:20px;" onclick="SprintModule.checkMatchAnswer()">Verificar</button>
          </div>
-         <button class="verify-btn" style="margin-top:20px;" onclick="SprintModule.checkMatchAnswer()">Verificar</button>
        `;
     }
 
-    html += `
-      </div>
-      <div id="feedback-bar" class="feedback-bar">
-        <div id="feedback-msg"></div>
-      </div>
-    `;
-
+    html += `</div>`;
     document.getElementById('sprint').innerHTML = html;
     this.setupInteractions(ex);
+  },
+
+  showRulesDrawer(blockId) {
+     this.isPaused = true;
+     const block = BLOCKS[blockId];
+     const exp = block.explain;
+     const rulesHtml = `
+       <h2 style="margin-bottom: 20px;">Reglas: ${block.title}</h2>
+       ${exp.rules.map(r => `
+          <div style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+            <div class="rule-formula" style="margin-bottom:5px;">${r.formula}</div>
+            <div style="color:var(--text-secondary); font-size:0.9rem;">Ej: ${r.example}</div>
+          </div>
+        `).join('')}
+       <div style="margin-top:30px; text-align:center;">
+          <button class="action-btn primary" onclick="SprintModule.closeRulesDrawer()">Volver al Sprint</button>
+       </div>
+     `;
+     App.openDrawer(rulesHtml);
+  },
+
+  closeRulesDrawer() {
+     App.closeDrawer();
+     this.isPaused = false;
   },
 
   setupInteractions(ex) {
@@ -201,7 +230,7 @@ const SprintModule = {
   
   selectMatch(side, el) {
      if (side === 'left') {
-       document.querySelectorAll('.match-btn-l').forEach(b => b.style.borderColor = 'transparent');
+       document.querySelectorAll('.match-btn-l').forEach(b => b.style.borderColor = 'var(--border)');
        el.style.borderColor = 'var(--accent-blue)';
        this.matchState.left = el;
      } else if (side === 'right' && this.matchState.left) {
@@ -224,13 +253,12 @@ const SprintModule = {
        const pair = ex.pairs.find(p => p.left === m.leftText);
        if (!pair || pair.right !== m.rightText) { isCorrect = false; break; }
     }
-    this.processAnswer(isCorrect, ex.answer || "matching");
+    this.processAnswer(isCorrect, "matching", "matching");
   },
 
   checkAnswer(answer) {
     const ex = this.exercises[this.currentIndex];
-    const isCorrect = answer === ex.answer;
-    this.processAnswer(isCorrect, ex.answer);
+    this.processAnswer(answer === ex.answer, answer, ex.answer);
   },
 
   checkTextAnswer() {
@@ -243,66 +271,105 @@ const SprintModule = {
     } else {
       isCorrect = input === ex.answer.toLowerCase();
     }
-    this.processAnswer(isCorrect, ex.answer);
+    this.processAnswer(isCorrect, input, ex.answer);
   },
 
   checkOrderAnswer() {
     const drop = document.getElementById('word-drop');
     const words = Array.from(drop.children).map(c => c.dataset.word).join(' ');
     const ex = this.exercises[this.currentIndex];
-    this.processAnswer(words === ex.answer, ex.answer);
+    this.processAnswer(words === ex.answer, words, ex.answer);
   },
 
-  processAnswer(isCorrect, correctAnswerText) {
+  async processAnswer(isCorrect, userAnswer, correctAnswer) {
     const container = document.getElementById('sprint-container');
-    const feedbackBar = document.getElementById('feedback-bar');
-    const feedbackMsg = document.getElementById('feedback-msg');
-    
     const buttons = container.querySelectorAll('button');
     buttons.forEach(b => b.style.pointerEvents = 'none');
     
     if (isCorrect) {
       container.classList.add('shake-correct');
-      feedbackBar.className = 'feedback-bar correct';
-      feedbackMsg.innerHTML = `✅ ¡Correcto!`;
       this.correctCount++;
-      this.xpEarned += 15; // More XP in sprint
-      App.playSound('correct');
+      this.xpEarned += 15;
       
-      // Auto advance fast
-      setTimeout(() => {
-        this.currentIndex++;
-        this.render();
-      }, 500);
+      const bsHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+           <div>
+             <h2 style="color:#a7f3d0; margin-bottom:5px;">¡Correcto! ⚡</h2>
+             <p style="color:#d1fae5;">+15 XP</p>
+           </div>
+           <button class="action-btn" style="background:#059669; color:white; border:none; width:auto; padding:12px 30px;" onclick="App.closeBottomSheet()">Siguiente</button>
+        </div>
+      `;
+      this.isPaused = true;
+      App.onBottomSheetClose = () => {
+         this.isPaused = false;
+         this.currentIndex++;
+         this.render();
+      };
+      App.openBottomSheet(bsHtml, true);
+      
+      // Auto-close correct after 1.5s to keep sprint fast if user doesn't click
+      this.autoCloseTimeout = setTimeout(() => {
+         if(document.getElementById('bottom-sheet').classList.contains('show')) {
+            App.closeBottomSheet();
+         }
+      }, 1500);
+
     } else {
       container.classList.add('shake-wrong');
-      feedbackBar.className = 'feedback-bar incorrect';
-      feedbackMsg.innerHTML = `❌ Incorrecto. +5 Segundos de penalización.<br>Correcto: ${correctAnswerText}`;
+      this.timeLeft = Math.max(0, this.timeLeft - 5); // Penalty
       
-      this.timeLeft = Math.max(0, this.timeLeft - 5);
+      this.isPaused = true; // Pause for AI
+      const ex = this.exercises[this.currentIndex];
+      const blockTitle = BLOCKS[ex.blockId].title;
       
-      const timerEl = document.getElementById('sprint-timer');
-      timerEl.style.color = 'var(--accent-red)';
-      setTimeout(() => timerEl.style.color = '', 500);
-      App.playSound('wrong');
+      App.openBottomSheet(`
+        <h2 style="color:#fecdd3; margin-bottom:10px;">¡Penalización! -5s ⏱️</h2>
+        <p style="color:#ffe4e6; font-size:1.1rem; margin-bottom:15px;">Correcto: <strong>${correctAnswer}</strong></p>
+        <div style="background:rgba(0,0,0,0.3); padding:20px; border-radius:16px; display:flex; align-items:center; gap:15px;">
+           <div class="ai-loader"></div>
+           <span style="color:#fda4af;">Analizando error...</span>
+        </div>
+      `, false);
 
-      setTimeout(() => {
-        this.currentIndex++;
-        this.render();
-      }, 1500); // Wait longer to show correct answer
+      const explanation = await AITutor.explainError(blockTitle, ex.question, userAnswer, correctAnswer);
+      
+      const finalBsHtml = `
+        <h2 style="color:#fecdd3; margin-bottom:10px;">¡Penalización! -5s ⏱️</h2>
+        <p style="color:#ffe4e6; font-size:1.1rem; margin-bottom:20px;">Correcto: <strong>${correctAnswer}</strong></p>
+        
+        <div class="ai-explanation" style="background:rgba(0,0,0,0.3); border-color:#f43f5e; color:#fecdd3;">
+          <div style="margin-bottom:10px;"><span class="ai-badge" style="background:linear-gradient(90deg, #f43f5e, #fb7185);">AI Tutor</span></div>
+          ${explanation}
+        </div>
+        
+        <button class="action-btn" style="background:#e11d48; color:white; border:none; font-weight:700;" onclick="App.closeBottomSheet()">Entendido y Continuar</button>
+      `;
+      
+      const sheet = document.getElementById('bottom-sheet');
+      if (sheet.classList.contains('show')) {
+         document.getElementById('bs-content').innerHTML = finalBsHtml;
+      }
+      
+      App.onBottomSheetClose = () => {
+         clearTimeout(this.autoCloseTimeout);
+         this.isPaused = false;
+         this.currentIndex++;
+         this.render();
+      };
     }
   },
 
   finishSprint() {
     clearInterval(this.timerInterval);
-    this.isSetup = true; // reset for next time
+    this.isSetup = true;
     
     const accuracy = this.exercises.length > 0 ? Math.round((this.correctCount / this.exercises.length) * 100) : 0;
     
     ResultsModule.setResultsData({
       type: 'sprint',
       accuracy: accuracy,
-      xp: this.xpEarned + 50, // Bonus for finishing
+      xp: this.xpEarned + 50,
       correct: this.correctCount,
       total: this.exercises.length
     });

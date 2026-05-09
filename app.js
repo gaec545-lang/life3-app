@@ -4,11 +4,7 @@ const App = {
   
   init() {
     this.initLocalStorage();
-    
-    // Listen to hash changes for routing
     window.addEventListener('hashchange', () => this.handleRoute());
-    
-    // Initial route
     if (!window.location.hash) {
       window.location.hash = '#dashboard';
     } else {
@@ -17,7 +13,7 @@ const App = {
   },
   
   initLocalStorage() {
-    const data = localStorage.getItem('life3_progress');
+    const data = localStorage.getItem('life3_progress_v2'); // new key for fresh start if needed, or use old
     if (data) {
       this.data = JSON.parse(data);
       this.checkStreak();
@@ -29,7 +25,6 @@ const App = {
         totalXP: 0
       };
       
-      // Initialize block statuses
       for (let i = 1; i <= 10; i++) {
         this.data.blocks[i] = {
           status: i === 1 ? 'available' : 'locked',
@@ -51,10 +46,7 @@ const App = {
       const diffTime = Math.abs(currentDate - lastDate);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
       
-      if (diffDays === 1) {
-        // Continue streak (will be incremented when they finish an activity)
-      } else if (diffDays > 1) {
-        // Reset streak
+      if (diffDays > 1) {
         this.data.streakDays = 0;
       }
       this.data.lastPlayed = today;
@@ -63,7 +55,7 @@ const App = {
   },
   
   saveData() {
-    localStorage.setItem('life3_progress', JSON.stringify(this.data));
+    localStorage.setItem('life3_progress_v2', JSON.stringify(this.data));
   },
   
   addXP(amount) {
@@ -73,10 +65,6 @@ const App = {
 
   incrementStreak() {
      const today = new Date().toISOString().split('T')[0];
-     // Simple logic: if they haven't "played" today in terms of completing something, increment.
-     // For a real app, you might track "hasCompletedActivityToday".
-     // For now, we'll assume calling this means they did something meaningful today.
-     // To avoid incrementing multiple times a day:
      if (this.data.lastActivityDate !== today) {
         this.data.streakDays++;
         this.data.lastActivityDate = today;
@@ -118,6 +106,10 @@ const App = {
     const views = document.querySelectorAll('.view');
     views.forEach(v => v.classList.remove('active'));
     
+    // Close overlays
+    this.closeBottomSheet();
+    this.closeDrawer();
+    
     if (hash === '' || hash === '#dashboard') {
       document.getElementById('dashboard').classList.add('active');
       DashboardModule.render();
@@ -142,12 +134,45 @@ const App = {
     }
   },
 
+  /* --- UI Overlay Controls --- */
+  
+  openBottomSheet(html, isCorrect) {
+    const sheet = document.getElementById('bottom-sheet');
+    const overlay = document.getElementById('bs-overlay');
+    const content = document.getElementById('bs-content');
+    
+    sheet.className = 'bottom-sheet ' + (isCorrect ? 'correct' : 'wrong');
+    content.innerHTML = html;
+    
+    overlay.classList.add('show');
+    sheet.classList.add('show');
+  },
+
+  closeBottomSheet() {
+    document.getElementById('bottom-sheet').classList.remove('show');
+    document.getElementById('bs-overlay').classList.remove('show');
+    
+    // Resume flow if there's a callback registered
+    if (this.onBottomSheetClose) {
+       const cb = this.onBottomSheetClose;
+       this.onBottomSheetClose = null;
+       cb();
+    }
+  },
+
+  openDrawer(html) {
+    document.getElementById('drawer-content').innerHTML = html;
+    document.getElementById('side-drawer').classList.add('show');
+    document.getElementById('drawer-overlay').classList.add('show');
+  },
+
+  closeDrawer() {
+    document.getElementById('side-drawer').classList.remove('show');
+    document.getElementById('drawer-overlay').classList.remove('show');
+  },
+
   playSound(type) {
-    // Optional sound playing
-    try {
-      const audio = new Audio(`assets/sounds/${type}.mp3`);
-      audio.play().catch(e => { /* Ignore missing sounds */ });
-    } catch(e) {}
+    // Optional sound
   }
 };
 

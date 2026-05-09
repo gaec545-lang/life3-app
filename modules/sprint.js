@@ -140,8 +140,8 @@ const SprintModule = {
 
     if (ex.type === 'multiple-choice' || ex.type === 'error-detection') {
       html += `<div class="options-grid">`;
-      ex.options.forEach((opt) => {
-        html += `<button class="option-btn" onclick="SprintModule.checkAnswer('${opt.replace(/'/g, "\\'")}')">${opt}</button>`;
+      ex.options.forEach((opt, idx) => {
+        html += `<button class="option-btn" onclick="SprintModule.checkAnswerIndex(${idx})">${opt}</button>`;
       });
       html += `</div>`;
     } else if (ex.type === 'fill-blank' || ex.type === 'translation') {
@@ -167,10 +167,10 @@ const SprintModule = {
          <div style="margin-top:auto;">
            <div style="display:flex; justify-content:space-between; gap:20px;">
              <div style="flex:1; display:flex; flex-direction:column; gap:10px;" id="match-left">
-               ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-l" data-id="${i}" onclick="SprintModule.selectMatch('left', this)">${p.left}</button>`).join('')}
+               ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-l" onclick="SprintModule.selectMatch('left', this)">${p.left}</button>`).join('')}
              </div>
              <div style="flex:1; display:flex; flex-direction:column; gap:10px;" id="match-right">
-               ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-r" data-val="${p.right.replace(/'/g, "\\'")}" onclick="SprintModule.selectMatch('right', this)">${p.right}</button>`).join('')}
+               ${[...ex.pairs].sort(()=>Math.random()-0.5).map((p, i) => `<button class="option-btn match-btn-r" onclick="SprintModule.selectMatch('right', this)">${p.right}</button>`).join('')}
              </div>
            </div>
            <button class="action-btn sprint" style="margin-top:20px;" onclick="SprintModule.checkMatchAnswer()">Verificar</button>
@@ -256,8 +256,9 @@ const SprintModule = {
     this.processAnswer(isCorrect, "matching", "matching");
   },
 
-  checkAnswer(answer) {
+  checkAnswerIndex(idx) {
     const ex = this.exercises[this.currentIndex];
+    const answer = ex.options[idx];
     this.processAnswer(answer === ex.answer, answer, ex.answer);
   },
 

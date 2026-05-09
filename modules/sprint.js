@@ -250,8 +250,8 @@ const SprintModule = {
     
     let isCorrect = true;
     for (let m of this.matchState.matches) {
-       const pair = ex.pairs.find(p => p.left === m.leftText);
-       if (!pair || pair.right !== m.rightText) { isCorrect = false; break; }
+       const pair = ex.pairs.find(p => App.normalize(p.left) === App.normalize(m.leftText));
+       if (!pair || App.normalize(pair.right) !== App.normalize(m.rightText)) { isCorrect = false; break; }
     }
     this.processAnswer(isCorrect, "matching", "matching");
   },
@@ -259,18 +259,19 @@ const SprintModule = {
   checkAnswerIndex(idx) {
     const ex = this.exercises[this.currentIndex];
     const answer = ex.options[idx];
-    this.processAnswer(answer === ex.answer, answer, ex.answer);
+    this.processAnswer(App.normalize(answer) === App.normalize(ex.answer), answer, ex.answer);
   },
 
   checkTextAnswer() {
-    const input = document.getElementById('sprint-text').value.trim().toLowerCase();
+    const input = document.getElementById('sprint-text').value;
     const ex = this.exercises[this.currentIndex];
     
     let isCorrect = false;
+    const normInput = App.normalize(input);
     if (ex.accepted) {
-      isCorrect = ex.accepted.map(a => a.toLowerCase().replace(/[.,!?]/g, '')).includes(input.replace(/[.,!?]/g, ''));
+      isCorrect = ex.accepted.some(a => App.normalize(a) === normInput);
     } else {
-      isCorrect = input === ex.answer.toLowerCase();
+      isCorrect = normInput === App.normalize(ex.answer);
     }
     this.processAnswer(isCorrect, input, ex.answer);
   },
@@ -279,7 +280,7 @@ const SprintModule = {
     const drop = document.getElementById('word-drop');
     const words = Array.from(drop.children).map(c => c.dataset.word).join(' ');
     const ex = this.exercises[this.currentIndex];
-    this.processAnswer(words === ex.answer, words, ex.answer);
+    this.processAnswer(App.normalize(words) === App.normalize(ex.answer), words, ex.answer);
   },
 
   async processAnswer(isCorrect, userAnswer, correctAnswer) {

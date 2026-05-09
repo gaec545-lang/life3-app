@@ -27,10 +27,18 @@ const App = {
       
       for (let i = 1; i <= 10; i++) {
         this.data.blocks[i] = {
-          status: i === 1 ? 'available' : 'locked',
+          status: 'available',
           stars: 0,
           bestScore: 0
         };
+      }
+      this.saveData();
+    } else {
+      // Force unlock all blocks for existing users as requested
+      for (let i = 1; i <= 10; i++) {
+        if (this.data.blocks[i].status === 'locked') {
+          this.data.blocks[i].status = 'available';
+        }
       }
       this.saveData();
     }
@@ -169,6 +177,15 @@ const App = {
   closeDrawer() {
     document.getElementById('side-drawer').classList.remove('show');
     document.getElementById('drawer-overlay').classList.remove('show');
+  },
+
+  normalize(str) {
+    if (!str) return "";
+    return str.toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[.,!?¡¿]/g, '') // Remove punctuation
+      .replace(/\s+/g, ' ');    // Normalize multiple spaces to one
   },
 
   playSound(type) {

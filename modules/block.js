@@ -321,22 +321,23 @@ const BlockModule = {
     
     let isCorrect = true;
     for (let m of this.matchState.matches) {
-       const pair = ex.pairs.find(p => p.left === m.leftText);
-       if (!pair || pair.right !== m.rightText) { isCorrect = false; break; }
+       const pair = ex.pairs.find(p => App.normalize(p.left) === App.normalize(m.leftText));
+       if (!pair || App.normalize(pair.right) !== App.normalize(m.rightText)) { isCorrect = false; break; }
     }
     this.processAnswer(isCorrect, "matching", "matching");
   },
 
   checkTextAnswer() {
-    const input = document.getElementById('text-answer').value.trim();
-    const inputLower = input.toLowerCase();
+    const input = document.getElementById('text-answer').value;
     const ex = this.practiceExercises[this.currentExerciseIndex];
     
     let isCorrect = false;
+    const normInput = App.normalize(input);
+
     if (ex.accepted) {
-      isCorrect = ex.accepted.map(a => a.toLowerCase().replace(/[.,!?]/g, '')).includes(inputLower.replace(/[.,!?]/g, ''));
+      isCorrect = ex.accepted.some(a => App.normalize(a) === normInput);
     } else {
-      isCorrect = inputLower === ex.answer.toLowerCase();
+      isCorrect = normInput === App.normalize(ex.answer);
     }
     this.processAnswer(isCorrect, input, ex.answer);
   },
@@ -345,13 +346,13 @@ const BlockModule = {
     const drop = document.getElementById('word-drop');
     const words = Array.from(drop.children).map(c => c.dataset.word).join(' ');
     const ex = this.practiceExercises[this.currentExerciseIndex];
-    this.processAnswer(words === ex.answer, words, ex.answer);
+    this.processAnswer(App.normalize(words) === App.normalize(ex.answer), words, ex.answer);
   },
 
   checkAnswerIndex(idx) {
     const ex = this.practiceExercises[this.currentExerciseIndex];
     const answer = ex.options[idx];
-    this.processAnswer(answer === ex.answer, answer, ex.answer);
+    this.processAnswer(App.normalize(answer) === App.normalize(ex.answer), answer, ex.answer);
   },
 
   async processAnswer(isCorrect, userAnswer, correctAnswer) {
